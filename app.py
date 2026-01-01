@@ -1,7 +1,7 @@
-import streamlit as st
-import pandas as pd
+import requests
+import base64
 
-!pip install streamlit
+
 import streamlit as st
 import pandas as pd
 
@@ -53,3 +53,54 @@ audit_log = {
     "Logic Output": [raw_input[:30] + "...", f"Amt: {amount}", "Unit Drift: False" if not is_violation else "Policy Contradiction", reason]
 }
 st.table(pd.DataFrame(audit_log))
+
+import requests
+import base64
+
+# --- CONFIGURATION ---
+TOKEN = "PASTE_YOUR_GITHUB_TOKEN_HERE"
+REPO = "Heidi75/deontic-veto-system"
+FILE_PATH = "app.py" # The file Streamlit looks for
+
+# --- THE HPLM CODE (This is what you are sending to the bank) ---
+hplm_code = """
+import streamlit as st
+import pandas as pd
+
+st.title("🛡️ HPLM 'Truth Engine' Interactive Demo")
+st.subheader("ENEG-OEPM Audit Interface")
+
+# --- LAYER 1: NEURAL INTAKE ---
+st.info("Layer 1: Neural Intake (Ingesting Unstructured Request)")
+raw_input = st.text_area("Enter Payment Narrative:",
+                         "Approve a $25,000 transfer from US HQ to Moscow branch for 'consulting services'.")
+
+# Interactive Sidebar for the User to change data
+st.sidebar.header("Layer 2: Formalization Parameters")
+user_amount = st.sidebar.number_input("Detected Amount ($)", value=25000)
+user_dest = st.sidebar.selectbox("Detected Destination", ["US", "DE", "RU", "MX", "IR"])
+risk_threshold = st.sidebar.slider("Global Risk Threshold", 5000, 50000, 20000)
+
+# --- LAYER 4 & 5: SYMBOLIC ARENA & VETO GATE ---
+st.divider()
+high_risk_countries = ["RU", "IR"]
+is_violation = (user_amount > risk_threshold) and (user_dest in high_risk_countries)
+
+if is_violation:
+    result_color, decision = "red", "VETO"
+    reason = f"Policy Violation: {user_dest} exceeds ${risk_threshold} cap."
+else:
+    result_color, decision = "green", "DEPLOYED"
+    reason = "Logic verified via Symbolic Arena."
+
+st.markdown(f"## Final Status: :{result_color}[{decision}]")
+
+# --- LAYER 6: TRACEBACK & AUDIT ---
+with st.expander("🔍 View Layer 6: Traceback & Audit (Forensic Evidence)"):
+    audit_log = {
+        "Step": ["Intake", "Formalization", "Arena Check", "Veto Gate"],
+        "Status": ["Complete", "Successful", "Violation Detected" if is_violation else "Passed", decision],
+        "Logic Output": [raw_input[:30] + "...", f"Amt: {user_amount}", "Unit Drift: False", reason]
+    }
+    st.table(pd.DataFrame(audit_log))
+"""
