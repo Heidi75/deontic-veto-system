@@ -1,106 +1,38 @@
-import requests
-import base64
-
 
 import streamlit as st
 import pandas as pd
 
-# Header mapping to Source 4: The Truth Engine
-st.title("HPLM 'Truth Engine' Interactive Demo")
-st.subheader("ENEG-OEPM Audit Interface")
+st.set_page_config(page_title="HPLM Truth Engine", page_icon="🛡️")
+
+st.title("🛡️ HPLM 'Truth Engine' Demo")
+st.subheader("ENEG-OEPM Financial Audit Interface")
 
 # --- LAYER 1: NEURAL INTAKE ---
-st.info("Layer 1: Neural Intake (Ingesting Unstructured Request)")
-raw_input = st.text_area("Enter Payment Narrative:",
-                         "Approve a $25,000 transfer from US HQ to Moscow branch for 'consulting services'.")
+st.sidebar.header("Control Panel")
+user_amount = st.sidebar.number_input("Transaction Amount ($)", value=25000, step=1000)
+user_dest = st.sidebar.selectbox("Destination Jurisdiction", ["US", "UK", "RU", "IR", "MX"])
+threshold = st.sidebar.slider("Risk Threshold ($)", 5000, 50000, 20000)
 
-# --- LAYER 2: FORMALIZATION ---
-# Mocking the extraction of variables (Source 12)
-amount = 25000
-destination = "RU"
-risk_threshold = 20000
+st.info("**Layer 1 (NIL):** Ingesting unstructured payment narrative...")
 
 # --- LAYER 4 & 5: SYMBOLIC ARENA & VETO GATE ---
+# The logic that protects the moat
+high_risk = ["RU", "IR"]
+is_violation = (user_amount > threshold) and (user_dest in high_risk)
+
 st.divider()
-st.write("### HPLM Processing Stack")
-
-with st.expander("View Layer 4: Symbolic Arena (Dimensional Analysis)"):
-    st.write("Checking unit consistency and financial constants...")
-    st.write(f"Variable 'Amount': {amount} (Type: USD)")
-    st.write(f"Constraint: Transfer < ${risk_threshold} for High-Risk Jurisdictions.")
-
-# Logic for Layer 5 (Source 22)
-is_violation = amount > risk_threshold and destination == "RU"
-
 if is_violation:
-    result_color = "red"
-    decision = "VETO"
-    reason = "Conservation of Policy Violation: High-risk destination exceeds value cap." # [cite: 22]
+    st.error(f"## LAYER 5: VETOED")
+    st.warning(f"Policy Violation: {user_dest} transfer of ${user_amount} exceeds ${threshold} limit.")
 else:
-    result_color = "green"
-    decision = "DEPLOYED"
-    reason = "Logic verified via Symbolic Arena." # [cite: 31]
-
-# --- LAYER 7: ACTION & DEPLOYMENT ---
-st.markdown(f"## Final Status: :{result_color}[{decision}]")
-
-# --- LAYER 6: TRACEBACK & AUDIT (Source 24) ---
-st.divider()
-st.write("### Layer 6: Traceback & Audit (Forensic Evidence)")
-audit_log = {
-    "Step": ["Intake", "Formalization", "Arena Check", "Veto Gate"],
-    "Status": ["Complete", "Successful", "Violation Detected" if is_violation else "Passed", decision],
-    "Logic Output": [raw_input[:30] + "...", f"Amt: {amount}", "Unit Drift: False" if not is_violation else "Policy Contradiction", reason]
-}
-st.table(pd.DataFrame(audit_log))
-
-import requests
-import base64
-
-# --- CONFIGURATION ---
-TOKEN = "PASTE_YOUR_GITHUB_TOKEN_HERE"
-REPO = "Heidi75/deontic-veto-system"
-FILE_PATH = "app.py" # The file Streamlit looks for
-
-# --- THE HPLM CODE (This is what you are sending to the bank) ---
-hplm_code = """
-import streamlit as st
-import pandas as pd
-
-st.title("🛡️ HPLM 'Truth Engine' Interactive Demo")
-st.subheader("ENEG-OEPM Audit Interface")
-
-# --- LAYER 1: NEURAL INTAKE ---
-st.info("Layer 1: Neural Intake (Ingesting Unstructured Request)")
-raw_input = st.text_area("Enter Payment Narrative:",
-                         "Approve a $25,000 transfer from US HQ to Moscow branch for 'consulting services'.")
-
-# Interactive Sidebar for the User to change data
-st.sidebar.header("Layer 2: Formalization Parameters")
-user_amount = st.sidebar.number_input("Detected Amount ($)", value=25000)
-user_dest = st.sidebar.selectbox("Detected Destination", ["US", "DE", "RU", "MX", "IR"])
-risk_threshold = st.sidebar.slider("Global Risk Threshold", 5000, 50000, 20000)
-
-# --- LAYER 4 & 5: SYMBOLIC ARENA & VETO GATE ---
-st.divider()
-high_risk_countries = ["RU", "IR"]
-is_violation = (user_amount > risk_threshold) and (user_dest in high_risk_countries)
-
-if is_violation:
-    result_color, decision = "red", "VETO"
-    reason = f"Policy Violation: {user_dest} exceeds ${risk_threshold} cap."
-else:
-    result_color, decision = "green", "DEPLOYED"
-    reason = "Logic verified via Symbolic Arena."
-
-st.markdown(f"## Final Status: :{result_color}[{decision}]")
+    st.success(f"## LAYER 5: DEPLOYED")
+    st.balloons()
 
 # --- LAYER 6: TRACEBACK & AUDIT ---
-with st.expander("🔍 View Layer 6: Traceback & Audit (Forensic Evidence)"):
-    audit_log = {
-        "Step": ["Intake", "Formalization", "Arena Check", "Veto Gate"],
-        "Status": ["Complete", "Successful", "Violation Detected" if is_violation else "Passed", decision],
-        "Logic Output": [raw_input[:30] + "...", f"Amt: {user_amount}", "Unit Drift: False", reason]
+with st.expander("🔍 View Layer 6: Forensic Audit Trail"):
+    audit_data = {
+        "HPLM Layer": ["1: Intake", "4: Symbolic Arena", "5: Deontic Veto Gate"],
+        "Process": ["Neural Intake (NIL)", "Dimensional Analysis", "Constraint Satisfaction"],
+        "Result": ["Success", "Violation Detected" if is_violation else "Passed", "REFUSAL" if is_violation else "CLEARED"]
     }
-    st.table(pd.DataFrame(audit_log))
-"""
+    st.table(pd.DataFrame(audit_data))
